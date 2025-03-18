@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Word to Numeral Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        #game-area {
+            border: 2px dotted #333;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        input {
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 16px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #score, #question-number, #message {
+            margin-top: 10px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-area">
+            <h2>Number Word to Numeral Game</h2>
+            <p>Convert the number word to a numeral:</p>
+            <p id="question"></p>
+            <input type="number" id="answer" placeholder="Enter your answer">
+            <button onclick="checkAnswer()">Submit</button>
+        </div>
+        <div id="question-number">Question 1 of 10</div>
+        <div id="score">Score: 0</div>
+        <div id="message"></div>
+    </div>
+
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <p id="feedback-message"></p>
+            <button onclick="closeFeedbackModal()">Next Question</button>
+        </div>
+    </div>
+
+    <div id="end-game-modal" class="modal">
+        <div class="modal-content">
+            <h2>Game Over</h2>
+            <p id="final-score"></p>
+            <button onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let currentAnswer;
+        let currentQuestionNumber = 1;
+        const totalQuestions = 10;
+
+        const ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+        function numberToWords(num) {
+            if (num === 0) return 'zero';
+            
+            function recur(n) {
+                if (n < 20) return ones[n];
+                if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? '-' + ones[n % 10] : '');
+                if (n < 1000) return ones[Math.floor(n / 100)] + ' hundred' + (n % 100 !== 0 ? ' and ' + recur(n % 100) : '');
+                return recur(Math.floor(n / 1000)) + ' thousand' + (n % 1000 !== 0 ? ' ' + recur(n % 1000) : '');
+            }
+            
+            return recur(num);
+        }
+
+        function newQuestion() {
+            if (currentQuestionNumber > totalQuestions) {
+                endGame();
+                return;
+            }
+            currentAnswer = Math.floor(Math.random() * 9999) + 1;
+            document.getElementById('question').textContent = numberToWords(currentAnswer);
+            document.getElementById('answer').value = '';
+            document.getElementById('question-number').textContent = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+        }
+
+        function checkAnswer() {
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            let feedbackMessage;
+            if (userAnswer === currentAnswer) {
+                score++;
+                feedbackMessage = 'Correct! Well done!';
+            } else {
+                feedbackMessage = `Incorrect. The correct answer was ${currentAnswer}.`;
+            }
+            document.getElementById('score').textContent = `Score: ${score}`;
+            showFeedbackModal(feedbackMessage);
+        }
+
+        function showFeedbackModal(message) {
+            document.getElementById('feedback-message').textContent = message;
+            document.getElementById('feedback-modal').style.display = 'block';
+        }
+
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+            currentQuestionNumber++;
+            newQuestion();
+        }
+
+        function endGame() {
+            document.getElementById('final-score').textContent = `Your final score is: ${score} out of ${totalQuestions}`;
+            document.getElementById('end-game-modal').style.display = 'block';
+        }
+
+        function restartGame() {
+            score = 0;
+            currentQuestionNumber = 1;
+            document.getElementById('score').textContent = 'Score: 0';
+            document.getElementById('end-game-modal').style.display = 'none';
+            newQuestion();
+        }
+
+        document.getElementById('answer').addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        newQuestion();
+    </script>
+</body>
+</html>
